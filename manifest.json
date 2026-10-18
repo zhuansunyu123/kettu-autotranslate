@@ -1,1 +1,1 @@
-{"authors":[{"id":"0","name":"Muse"}],"description":"进帖子自动把英文消息翻译成中文","main":"index.js","name":"AutoTranslate","vendetta":{"icon":"ic_locale_24px"}}
+{"authors": [{"id": "0", "name": "Muse"}], "description": "进帖子自动把英文消息翻译成中文", "main": "index.js", "name": "AutoTranslate", "vendetta": {"icon": "ic_locale_24px"}, "hash": "0af39b0d3b8bc39bbf217e8e29da492a68ce7029454157617c0ffae0bc25d52b"}
