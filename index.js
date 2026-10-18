@@ -14,8 +14,10 @@
     storage.enabled ??= true;
     storage.target_lang ??= "zh-CN";
 
-    // ===== Translation via Google Translate (free, no key) =====
-    async function translate(text, targetLang) {
+    // ===== Translation =====
+    // Primary: Google Translate (free, no key). Fallback: MyMemory (free, no key,
+    // reachable from mainland China without proxy).
+    async function translateGoogle(text, targetLang) {
         const url = "https://translate.googleapis.com/translate_a/single?" + new URLSearchParams({
             client: "gtx",
             sl: "auto",
@@ -27,8 +29,27 @@
         const res = await (await fetch(url)).json();
         // dj=1 returns { sentences: [{trans}], src }
         const translated = (res.sentences || []).map(s => s.trans).join("");
-        const srcLang = res.src || "auto";
-        return { text: translated, srcLang };
+        if (!translated || !translated.trim()) throw new Error("empty google result");
+        return { text: translated, srcLang: res.src || "auto" };
+    }
+    async function translateMyMemory(text, targetLang) {
+        // MyMemory: langpair format like "en|zh-CN" (it accepts "EN|ZH-CN")
+        const url = "https://api.mymemory.translated.net/get?" + new URLSearchParams({
+            q: text,
+            langpair: "auto|" + targetLang,
+        });
+        const res = await (await fetch(url)).json();
+        const translated = res?.responseData?.translatedText;
+        if (!translated || !translated.trim()) throw new Error("empty mymemory result");
+        return { text: translated, srcLang: "auto" };
+    }
+    async function translate(text, targetLang) {
+        try {
+            return await translateGoogle(text, targetLang);
+        } catch (e) {
+            // Google unreachable (e.g. mainland China) -> fall back to MyMemory
+            return await translateMyMemory(text, targetLang);
+        }
     }
 
     // ===== Language detection: skip if already Chinese =====
